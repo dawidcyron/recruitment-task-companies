@@ -1,6 +1,7 @@
 <template>
     <div class="container">
-        <table>
+        <input v-model="filter" placeholder="Enter something to filter results" class="filter-input" @input="filterItems">
+        <table class="data-table">
             <tr>
                 <th>
                     Id
@@ -21,7 +22,7 @@
                     Last month income
                 </th>
             </tr>
-            <tr v-for="company in companies" :key="company.id">
+            <tr v-for="company in displayedCompanies" :key="company.id">
                 <td>
                     {{company.id}}
                 </td>
@@ -53,6 +54,8 @@
     data () {
       return {
         companies: [],
+        displayedCompanies: [],
+        filter: ''
       }
     },
     async created () {
@@ -63,9 +66,10 @@
         companies.push(company)
       }
       this.companies = companies
+      this.displayedCompanies = this.companies
     },
     methods: {
-      async calculateIncomes(company) {
+      async calculateIncomes (company) {
         const response = await axios.get('https://recruitment.hal.skygate.io/incomes/' + company.id)
         let totalIncome = 0
         let lastMonthIncome = 0
@@ -80,19 +84,25 @@
           totalIncome += parseFloat(income.value)
         }
         company.totalIncome = totalIncome
-        company.averageIncome = totalIncome/response.data.incomes.length
+        company.averageIncome = totalIncome / response.data.incomes.length
         company.lastMonthIncome = lastMonthIncome
       },
-      getLastDayOfPreviousMonth() {
+      getLastDayOfPreviousMonth () {
         let date = new Date()
         date.setDate(0)
         return date
       },
-      getFirstDayOfPreviousMonth() {
+      getFirstDayOfPreviousMonth () {
         let date = new Date()
         date.setDate(0)
         date.setDate(1)
         return date
+      },
+      stringifyCompany (company) {
+        return `${company.id} ${company.name} ${company.name} ${company.totalIncome} ${company.averageIncome} ${company.lastMonthIncome}`
+      },
+      filterItems() {
+        this.displayedCompanies = this.companies.filter(company => this.stringifyCompany(company).includes(this.filter))
       }
     }
   }
@@ -102,7 +112,17 @@
 <style scoped>
     .container {
         display: flex;
+        flex-direction: column;
         margin: auto;
         width: 70%;
+    }
+
+    .data-table {
+        flex-basis: 100%;
+    }
+
+    .filter-input {
+        flex-basis: 30%;
+        align-self: flex-end;
     }
 </style>
