@@ -1,24 +1,27 @@
 <template>
     <div class="container">
+        <div>
+            {{sortColumn}}
+        </div>
         <input v-model="filter" placeholder="Enter something to filter results" class="filter-input" @input="filterItems">
         <table class="data-table">
             <tr>
-                <th>
+                <th @click="sortItems('id')">
                     Id
                 </th>
-                <th>
+                <th @click="sortItems('name')">
                     Name
                 </th>
-                <th>
+                <th @click="sortItems('city')">
                     City
                 </th>
-                <th>
+                <th @click="sortItems('totalIncome')">
                     Total income
                 </th>
-                <th>
+                <th @click="sortItems('averageIncome')">
                     Average income
                 </th>
-                <th>
+                <th @click="sortItems('lastMonthIncome')">
                     Last month income
                 </th>
             </tr>
@@ -55,7 +58,9 @@
       return {
         companies: [],
         displayedCompanies: [],
-        filter: ''
+        filter: '',
+        sortColumn: 'id',
+        sortDescending: false
       }
     },
     async created () {
@@ -87,6 +92,24 @@
         company.averageIncome = totalIncome / response.data.incomes.length
         company.lastMonthIncome = lastMonthIncome
       },
+      filterItems() {
+        this.displayedCompanies = this.companies.filter(company => this.stringifyCompany(company).includes(this.filter))
+      },
+      sortItems(column) {
+        if (column === this.sortColumn) {
+          this.sortDescending = !this.sortDescending
+        } else {
+          this.sortDescending = false
+        }
+        this.sortColumn = column
+        this.displayedCompanies = this.displayedCompanies.sort((a, b) => {
+          if (this.sortDescending) {
+            return a[column] < b[column] ? 1 : -1
+          } else {
+            return a[column] > b[column] ? 1 : -1
+          }
+        })
+      },
       getLastDayOfPreviousMonth () {
         let date = new Date()
         date.setDate(0)
@@ -100,9 +123,6 @@
       },
       stringifyCompany (company) {
         return `${company.id} ${company.name} ${company.name} ${company.totalIncome} ${company.averageIncome} ${company.lastMonthIncome}`
-      },
-      filterItems() {
-        this.displayedCompanies = this.companies.filter(company => this.stringifyCompany(company).includes(this.filter))
       }
     }
   }
