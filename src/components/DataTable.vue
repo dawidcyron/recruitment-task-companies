@@ -1,8 +1,5 @@
 <template>
     <div class="container">
-        <div>
-            {{sortColumn}}
-        </div>
         <input v-model="filter" placeholder="Enter something to filter results" class="filter-input" @input="filterItems">
         <table class="data-table">
             <tr>
@@ -122,7 +119,7 @@
         return date
       },
       stringifyCompany (company) {
-        return `${company.id} ${company.name} ${company.name} ${company.totalIncome} ${company.averageIncome} ${company.lastMonthIncome}`
+        return `${company.id} ${company.name} ${company.city} ${company.totalIncome} ${company.averageIncome} ${company.lastMonthIncome}`
       }
     }
   }
