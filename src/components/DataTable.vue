@@ -38,7 +38,7 @@
                     {{company.averageIncome.toFixed(2)}}
                 </td>
                 <td>
-                    {{company.lastMonthIncome}}
+                    {{company.lastMonthIncome.toFixed(2)}}
                 </td>
             </tr>
         </table>
@@ -68,13 +68,32 @@
       async calculateIncomes(company) {
         const response = await axios.get('https://recruitment.hal.skygate.io/incomes/' + company.id)
         let totalIncome = 0
+        let lastMonthIncome = 0
+        let lastDayOfPreviousMonth = this.getLastDayOfPreviousMonth()
+        let firstDayOfPreviousMonth = this.getFirstDayOfPreviousMonth()
 
         for (let income of response.data.incomes) {
+          let incomeDate = new Date(income.date)
+          if (incomeDate > firstDayOfPreviousMonth && incomeDate < lastDayOfPreviousMonth) {
+            lastMonthIncome += parseFloat(income.value)
+          }
           totalIncome += parseFloat(income.value)
         }
         company.totalIncome = totalIncome
         company.averageIncome = totalIncome/response.data.incomes.length
+        company.lastMonthIncome = lastMonthIncome
       },
+      getLastDayOfPreviousMonth() {
+        let date = new Date()
+        date.setDate(0)
+        return date
+      },
+      getFirstDayOfPreviousMonth() {
+        let date = new Date()
+        date.setDate(0)
+        date.setDate(1)
+        return date
+      }
     }
   }
 </script>
