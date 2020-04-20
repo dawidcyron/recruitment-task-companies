@@ -6,18 +6,18 @@
             <div class="label">
                 Select column used for sorting
             </div>
-            <select v-model="sortColumn" class="sort-input filter-input" @change="sortItems(sortColumn, sortDescending)">
+            <select v-model="sortColumn" class="sort-input filter-input" @change="sortItems(sortColumn, true)">
                 <option value="id">Id</option>
                 <option value="name">Name</option>
                 <option value="city">City</option>
                 <option value="totalIncome">Total income</option>
-                <option value="averageincome">Average income</option>
+                <option value="averageIncome">Average income</option>
                 <option value="lastMonthIncome">Last month income</option>
             </select>
             <div class="label">Select sorting order</div>
-            <select v-model="sortDescending" class="sort-input filter-input" @change="sortItems(sortColumn, sortDescending)">
+            <select v-model="sortDescending" class="sort-input filter-input" @change="sortItems(sortColumn, true, true)">
                 <option value="true">Descending</option>
-                <option value="false" selected>Ascending</option>
+                <option value="false">Ascending</option>
             </select>
 
         </div>
@@ -161,15 +161,19 @@
         this.displayedCompanies = this.companies.filter(company => this.stringifyCompany(company).toLocaleLowerCase().includes(this.filter.toLowerCase()))
         this.currentPageNumber = 1
       },
-      sortItems (column, direction) {
-        if (column === this.sortColumn) {
+      sortItems (column, passedFromInput, sortingFromInput) {
+
+        if (passedFromInput) {
+          if (sortingFromInput === undefined) {
+            this.sortDescending = false
+          } else {
+            // Because select field is passed as string, it is converted to bool here
+            this.sortDescending = (this.sortDescending === 'true')
+          }
+        } else if (column === this.sortColumn) {
           this.sortDescending = !this.sortDescending
         } else {
           this.sortDescending = false
-        }
-        console.log(direction)
-        if (direction || direction === 'false' || direction === false) {
-          this.sortDescending = direction
         }
         this.sortColumn = column
         this.displayedCompanies = this.displayedCompanies.sort((a, b) => {
