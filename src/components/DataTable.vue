@@ -1,6 +1,7 @@
 <template>
     <div class="container">
-        <input v-model="filter" placeholder="Enter something to filter results" class="filter-input" @input="filterItems">
+        <input v-model="filter" placeholder="Enter something to filter results" class="filter-input"
+               @input="filterItems">
         <table class="data-table">
             <tr>
                 <th @click="sortItems('id')">
@@ -22,7 +23,7 @@
                     Last month income
                 </th>
             </tr>
-            <tr v-for="company in displayedCompanies" :key="company.id">
+            <tr v-for="company in paginatedCompanies" :key="company.id">
                 <td>
                     {{company.id}}
                 </td>
@@ -43,6 +44,13 @@
                 </td>
             </tr>
         </table>
+        <div v-if="!isBusy" class="pagination">
+            <button :disabled="currentPageNumber === 1" @click="currentPageNumber--">Previous</button>
+            <div>
+                {{currentPageNumber + '/' + pageCount}}
+            </div>
+            <button :disabled="currentPageNumber === pageCount" @click="currentPageNumber++">Next</button>
+        </div>
     </div>
 </template>
 
@@ -56,8 +64,11 @@
         companies: [],
         displayedCompanies: [],
         filter: '',
-        sortColumn: 'id',
-        sortDescending: false
+        sortColumn: '',
+        sortDescending: false,
+        currentPageNumber: 1,
+        perPage: 20,
+        isBusy: true
       }
     },
     async created () {
@@ -69,6 +80,18 @@
       }
       this.companies = companies
       this.displayedCompanies = this.companies
+      this.sortItems('id')
+      this.isBusy = false
+    },
+    computed: {
+      paginatedCompanies () {
+        let start = (this.currentPageNumber - 1) * this.perPage
+        let end = start + this.perPage
+        return this.displayedCompanies.slice(start, end)
+      },
+      pageCount () {
+        return this.displayedCompanies.length ? Math.ceil(this.displayedCompanies.length / this.perPage) : 1
+      }
     },
     methods: {
       async calculateIncomes (company) {
@@ -89,10 +112,11 @@
         company.averageIncome = totalIncome / response.data.incomes.length
         company.lastMonthIncome = lastMonthIncome
       },
-      filterItems() {
-        this.displayedCompanies = this.companies.filter(company => this.stringifyCompany(company).includes(this.filter))
+      filterItems () {
+        this.displayedCompanies = this.companies.filter(company => this.stringifyCompany(company).toLocaleLowerCase().includes(this.filter.toLowerCase()))
+        this.currentPageNumber = 1
       },
-      sortItems(column) {
+      sortItems (column) {
         if (column === this.sortColumn) {
           this.sortDescending = !this.sortDescending
         } else {
@@ -141,5 +165,12 @@
     .filter-input {
         flex-basis: 30%;
         align-self: flex-end;
+    }
+
+    .pagination {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: center;
     }
 </style>
